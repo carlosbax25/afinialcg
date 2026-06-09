@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Configurar Monitor - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-gear"></i> Configuración del Monitor</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-4">
+                        <h6 class="text-primary"><i class="bi bi-bullseye"></i> Meta de Consumo</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Costo máximo mensual ($)</label>
+                                <input type="number" step="1000" class="form-control" name="costo_maximo_mes"
+                                       value="{{ config.costo_maximo_mes or 700000 }}" required>
+                                <small class="text-muted">Tu tope total mensual en pesos</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tarifa por kWh ($)</label>
+                                <input type="number" step="1" class="form-control" name="tarifa_kwh"
+                                       value="{{ config.tarifa_kwh or 850 }}" required>
+                                <small class="text-muted">Valor del kWh en tu factura Afinia</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary"><i class="bi bi-receipt"></i> Cargos Fijos Mensuales (Impuestos)</h6>
+                        <p class="small text-muted">Estos valores se descuentan de tu presupuesto para calcular cuánta energía realmente puedes consumir.</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Aseo ($)</label>
+                                <input type="number" step="1" class="form-control" name="aseo"
+                                       value="{{ config.aseo or 0 }}" placeholder="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Alumbrado Público ($)</label>
+                                <input type="number" step="1" class="form-control" name="alumbrado_publico"
+                                       value="{{ config.alumbrado_publico or 0 }}" placeholder="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tasa Seguridad ($)</label>
+                                <input type="number" step="1" class="form-control" name="tasa_seguridad"
+                                       value="{{ config.tasa_seguridad or 0 }}" placeholder="0">
+                                <small class="text-muted">Convivencia ciudadana</small>
+                            </div>
+                        </div>
+
+                        {% if config.total_cargos_fijos > 0 %}
+                        <div class="alert alert-info small">
+                            <i class="bi bi-calculator"></i>
+                            <strong>Resumen:</strong><br>
+                            Presupuesto total: ${{ "{:,.0f}".format(config.costo_maximo_mes) }}<br>
+                            Cargos fijos: -${{ "{:,.0f}".format(config.total_cargos_fijos) }}<br>
+                            Disponible para energía: <strong>${{ "{:,.0f}".format(config.presupuesto_energia_pura) }}</strong><br>
+                            {% if config.tarifa_kwh %}
+                            Tope en kWh: <strong>{{ "%.0f"|format(config.kwh_maximo) }} kWh</strong>
+                            {% endif %}
+                        </div>
+                        {% elif config.costo_maximo_mes and config.tarifa_kwh %}
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle"></i>
+                            Con ${{ "{:,.0f}".format(config.costo_maximo_mes) }} y tarifa de ${{ "{:,.0f}".format(config.tarifa_kwh) }}/kWh,
+                            tu tope es <strong>{{ "%.0f"|format(config.costo_maximo_mes / config.tarifa_kwh) }} kWh</strong> al mes.
+                            <br><small>Ingrese los cargos fijos para un cálculo más preciso.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-primary"><i class="bi bi-calendar-range"></i> Ciclo de Facturación Actual</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Lectura del contador al inicio del ciclo (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="lectura_inicio_ciclo"
+                                   value="{{ config.lectura_inicio_ciclo or '' }}"
+                                   placeholder="Ej: 12000.50">
+                            <small class="text-muted">La lectura que tenía el contador al llegar la factura anterior</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Inicio del ciclo</label>
+                                <input type="date" class="form-control" name="fecha_inicio_ciclo"
+                                       value="{{ config.fecha_inicio_ciclo or '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fin del ciclo (estimado)</label>
+                                <input type="date" class="form-control" name="fecha_fin_ciclo"
+                                       value="{{ config.fecha_fin_ciclo or '' }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-lg"></i> Guardar Configuración
+                        </button>
+                        <a href="/monitor" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="bi bi-question-circle"></i> ¿Cómo funciona?</h6>
+                <ol class="small mb-0">
+                    <li>Configure su <strong>tope máximo</strong> (lo que no quiere superar al mes) y la <strong>tarifa</strong> de su factura Afinia.</li>
+                    <li>Agregue los <strong>cargos fijos</strong> (aseo, alumbrado, seguridad) para que el cálculo sea más preciso.</li>
+                    <li>Ingrese la <strong>lectura del contador</strong> al inicio del ciclo.</li>
+                    <li>Vaya registrando las lecturas de su contador cada vez que quiera verificar cómo va.</li>
+                    <li>El medidor le mostrará en verde, naranja o rojo si va bien o se está pasando.</li>
+                    <li>Cuando llegue la nueva factura, presione "Iniciar Nuevo Ciclo".</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="bi bi-lightbulb"></i> ¿Dónde encuentro estos valores?</h6>
+                <ul class="small mb-0">
+                    <li><strong>Tarifa kWh:</strong> En la factura, busque "Energía" en el resumen de facturación y divida el valor entre los kWh consumidos.</li>
+                    <li><strong>Aseo:</strong> Aparece como "Aseo" en Otras Entidades.</li>
+                    <li><strong>Alumbrado Público:</strong> Aparece como "Imp. Alumbrado" en la factura.</li>
+                    <li><strong>Tasa Seguridad:</strong> Aparece como "Tasa Seguridad y Convivencia" en la factura.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

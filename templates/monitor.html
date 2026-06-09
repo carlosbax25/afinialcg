@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Monitor de Consumo - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <h2><i class="bi bi-speedometer2"></i> Monitor de Consumo</h2>
+        <p class="text-muted">Control en tiempo real de tu consumo de energía</p>
+    </div>
+</div>
+
+<!-- Gauge principal -->
+<div class="row mb-4">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body text-center">
+                <div id="gauge-chart" style="height: 340px;"></div>
+                <h4 class="mt-2" style="color: {{ estado_color }}">{{ estado_texto }}</h4>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-calendar-check"></i>
+                    <strong>{{ dias_transcurridos }}</strong> días transcurridos |
+                    <strong>{{ dias_restantes }}</strong> días restantes
+                    {% if dias_transcurridos > 0 and kwh_maximo > 0 %}
+                        {% set porcentaje_tiempo = (dias_transcurridos / (dias_transcurridos + dias_restantes)) * 100 if (dias_transcurridos + dias_restantes) > 0 else 0 %}
+                        {% if porcentaje <= porcentaje_tiempo %}
+                            | <span class="text-success fw-bold">👍 Ritmo adecuado</span>
+                        {% elif porcentaje <= porcentaje_tiempo * 1.2 %}
+                            | <span class="text-warning fw-bold">⚠️ Ligeramente por encima, ajusta un poco</span>
+                        {% else %}
+                            | <span class="text-danger fw-bold">🚨 Consumo alto para los días que llevas, hay que ahorrar</span>
+                        {% endif %}
+                    {% endif %}
+                </p>
+                <div class="row mt-3">
+                    <div class="col-4">
+                        <h5 class="text-primary">{{ consumo_actual }} kWh</h5>
+                        <small class="text-muted">Consumido</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="text-warning">{{ kwh_maximo }} kWh</h5>
+                        <small class="text-muted">Tope máximo</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 style="color: {{ estado_color }}">${{ "{:,.0f}".format(costo_total_estimado) }}</h5>
+                        <small class="text-muted">Costo total estimado</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tarjeta de Tarifa y Desglose -->
+<div class="row mb-4">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center text-center">
+                    <div class="col-6 col-md-3 mb-2 mb-md-0 border-end">
+                        <small class="text-muted d-block">Tarifa kWh</small>
+                        <h4 class="text-primary mb-0">${{ "{:,.0f}".format(config.tarifa_kwh) }}</h4>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2 mb-md-0 border-end-md">
+                        <small class="text-muted d-block">Aseo</small>
+                        <h5 class="mb-0">${{ "{:,.0f}".format(config.aseo or 0) }}</h5>
+                    </div>
+                    <div class="col-6 col-md-3 border-end-md">
+                        <small class="text-muted d-block">Alumbrado Público</small>
+                        <h5 class="mb-0">${{ "{:,.0f}".format(config.alumbrado_publico or 0) }}</h5>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <small class="text-muted d-block">Tasa Seguridad</small>
+                        <h5 class="mb-0">${{ "{:,.0f}".format(config.tasa_seguridad or 0) }}</h5>
+                    </div>
+                </div>
+                {% if config.total_cargos_fijos > 0 %}
+                <div class="text-center mt-2 pt-2 border-top">
+                    <small class="text-muted">
+                        Cargos fijos: <strong>${{ "{:,.0f}".format(config.total_cargos_fijos) }}</strong> |
+                        Disponible para energía: <strong>${{ "{:,.0f}".format(config.presupuesto_energia_pura) }}</strong> de ${{ "{:,.0f}".format(config.costo_maximo_mes) }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Métricas rápidas -->
+<div class="row mb-4 g-2">
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-info"><i class="bi bi-calendar-day"></i></div>
+            <h5>{{ dias_transcurridos }} días</h5>
+            <small class="text-muted">Transcurridos</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-primary"><i class="bi bi-graph-up-arrow"></i></div>
+            <h5>{{ promedio_diario }} kWh/día</h5>
+            <small class="text-muted">Promedio diario</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-warning"><i class="bi bi-hourglass-split"></i></div>
+            <h5>{{ dias_restantes }} días</h5>
+            <small class="text-muted">Restantes del ciclo</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-danger"><i class="bi bi-arrow-right-circle"></i></div>
+            <h5>${{ "{:,.0f}".format(costo_proyectado) }}</h5>
+            <small class="text-muted">Proyección fin de mes</small>
+        </div>
+    </div>
+</div>
+
+<!-- Registrar lectura + Historial -->
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Lectura del Contador</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/monitor/lectura">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Lectura del contador (kWh)</label>
+                        <input type="number" step="0.01" class="form-control form-control-lg"
+                               name="lectura_kwh" placeholder="Ej: 12345.67" required autofocus>
+                        <small class="text-muted">Ingrese el valor que muestra su contador</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha y hora</label>
+                        <input type="datetime-local" class="form-control" name="fecha_lectura"
+                               value="{{ now }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nota (opcional)</label>
+                        <input type="text" class="form-control" name="nota"
+                               placeholder="Ej: Lectura de la mañana">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-check-lg"></i> Registrar Lectura
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="card">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/monitor/configurar" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear"></i> Configurar meta y tarifa
+                    </a>
+                    <form method="POST" action="/monitor/nuevo-ciclo"
+                          onsubmit="return confirm('¿Iniciar nuevo ciclo? La lectura actual será la nueva base.')">
+                        <button type="submit" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-arrow-repeat"></i> Iniciar Nuevo Ciclo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <!-- Gráfico de tendencia -->
+        {% if lecturas|length > 1 %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Tendencia de Consumo</h5>
+            </div>
+            <div class="card-body">
+                <div id="tendencia-chart" style="height: 250px;"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Historial de lecturas -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Historial de Lecturas</h5>
+                <span class="badge bg-primary">{{ lecturas|length }} registros</span>
+            </div>
+            <div class="card-body">
+                {% if lecturas %}
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Lectura (kWh)</th>
+                                <th>Consumo parcial</th>
+                                <th>Nota</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lectura in lecturas %}
+                            <tr>
+                                <td>{{ lectura.fecha_lectura.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td><strong>{{ lectura.lectura_kwh }}</strong></td>
+                                <td>
+                                    {% if config.lectura_inicio_ciclo is not none %}
+                                        {{ "%.2f"|format(lectura.lectura_kwh - config.lectura_inicio_ciclo) }} kWh
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td><small class="text-muted">{{ lectura.nota or '' }}</small></td>
+                                <td>
+                                    <form method="POST" action="/monitor/eliminar/{{ lectura.id }}"
+                                          class="d-inline" onsubmit="return confirm('¿Eliminar?')">
+                                        <button class="btn btn-sm btn-outline-danger p-0 px-1">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-speedometer display-4 text-muted"></i>
+                    <p class="mt-2 text-muted">No hay lecturas registradas aún.</p>
+                    <p class="small">Primero <a href="/monitor/configurar">configure su ciclo</a>, luego registre la lectura de su contador.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Gauge chart
+var gaugeData = [{
+    type: "indicator",
+    mode: "gauge+number+delta",
+    value: {{ consumo_actual }},
+    title: { text: "Consumo del Ciclo (kWh)", font: { size: 18 } },
+    number: { suffix: " kWh", font: { size: 28 } },
+    gauge: {
+        axis: {
+            range: [0, {{ kwh_maximo if kwh_maximo > 0 else 1000 }}],
+            tickwidth: 2,
+            tickcolor: "#333"
+        },
+        bar: { color: "{{ estado_color }}", thickness: 0.3 },
+        bgcolor: "white",
+        borderwidth: 2,
+        bordercolor: "#ccc",
+        steps: [
+            { range: [0, {{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}], color: "#e8f5e9" },
+            { range: [{{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}, {{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}], color: "#fff3e0" },
+            { range: [{{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}, {{ kwh_maximo if kwh_maximo > 0 else 1000 }}], color: "#ffebee" }
+        ],
+        threshold: {
+            line: { color: "red", width: 4 },
+            thickness: 0.75,
+            value: {{ kwh_maximo if kwh_maximo > 0 else 1000 }}
+        }
+    }
+}];
+
+var gaugeLayout = {
+    margin: { t: 80, r: 30, l: 30, b: 10 },
+    height: 320,
+    font: { family: "system-ui" }
+};
+
+Plotly.newPlot('gauge-chart', gaugeData, gaugeLayout, {responsive: true, displayModeBar: false});
+
+{% if lecturas|length > 1 %}
+// Tendencia chart
+var fechas = [{% for l in lecturas|reverse %}"{{ l.fecha_lectura.strftime('%d/%m %H:%M') }}"{% if not loop.last %},{% endif %}{% endfor %}];
+var consumos = [{% for l in lecturas|reverse %}{{ "%.2f"|format(l.lectura_kwh - config.lectura_inicio_ciclo) if config.lectura_inicio_ciclo is not none else 0 }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+var tendenciaData = [{
+    x: fechas,
+    y: consumos,
+    type: 'scatter',
+    mode: 'lines+markers',
+    name: 'Consumo acumulado',
+    line: { color: '#1a73e8', width: 3 },
+    marker: { size: 6 },
+    fill: 'tozeroy',
+    fillcolor: 'rgba(26, 115, 232, 0.1)'
+}];
+
+// Línea del tope
+tendenciaData.push({
+    x: fechas,
+    y: Array(fechas.length).fill({{ kwh_maximo if kwh_maximo > 0 else 1000 }}),
+    type: 'scatter',
+    mode: 'lines',
+    name: 'Tope máximo',
+    line: { color: '#F44336', width: 2, dash: 'dash' }
+});
+
+var tendenciaLayout = {
+    margin: { t: 10, r: 20, l: 50, b: 40 },
+    height: 230,
+    showlegend: true,
+    legend: { x: 0.01, y: 0.99 },
+    yaxis: { title: 'kWh' },
+    font: { family: "system-ui" }
+};
+
+Plotly.newPlot('tendencia-chart', tendenciaData, tendenciaLayout, {responsive: true, displayModeBar: false});
+{% endif %}
+</script>
+{% endblock %}

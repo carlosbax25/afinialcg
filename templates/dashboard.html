@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Control de Energía{% endblock %}
+
+{% block content %}
+<!-- Resumen -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-primary"><i class="bi bi-file-earmark-text"></i></div>
+            <h5>{{ facturas|length }}</h5>
+            <small class="text-muted">Facturas registradas</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-success"><i class="bi bi-cpu"></i></div>
+            <h5>{{ total_equipos }}</h5>
+            <small class="text-muted">Equipos registrados</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-warning"><i class="bi bi-lightning"></i></div>
+            <h5>{{ consumo_proyectado }} kWh</h5>
+            <small class="text-muted">Consumo proyectado/mes</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3">
+            <div class="display-6 text-info"><i class="bi bi-cash-stack"></i></div>
+            {% if facturas %}
+            <h5>${{ "{:,.0f}".format(facturas[-1].costo_total) }}</h5>
+            <small class="text-muted">Último costo registrado</small>
+            {% else %}
+            <h5>-</h5>
+            <small class="text-muted">Sin datos</small>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+{% if grafico_consumo %}
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <div id="grafico-consumo"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <div id="grafico-costos"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if grafico_comparativo %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div id="grafico-comparativo"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recomendaciones -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Recomendaciones de Ahorro</h5>
+            </div>
+            <div class="card-body">
+                {% for rec in recomendaciones %}
+                <div class="recomendacion {{ rec.prioridad }}">
+                    <strong>{{ rec.icono }} {{ rec.titulo }}</strong>
+                    <p class="mb-0 small mt-1">{{ rec.detalle }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-table"></i> Historial de Facturas</h5>
+            </div>
+            <div class="card-body">
+                {% if facturas %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Periodo</th>
+                                <th>kWh</th>
+                                <th>Costo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in facturas|reverse %}
+                            <tr>
+                                <td>{{ f.periodo_inicio.strftime('%d/%m/%Y') }} - {{ f.periodo_fin.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ f.consumo_kwh }}</td>
+                                <td>${{ "{:,.0f}".format(f.costo_total) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No hay facturas registradas. <a href="/upload">Cargue una factura</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if not facturas %}
+<div class="text-center mt-4">
+    <div class="card p-5">
+        <i class="bi bi-bar-chart display-1 text-muted"></i>
+        <h4 class="mt-3">Comience cargando sus facturas</h4>
+        <p class="text-muted">Suba imágenes de sus facturas de Afinia para ver gráficos comparativos y recomendaciones de ahorro.</p>
+        <a href="/upload" class="btn btn-primary btn-lg"><i class="bi bi-cloud-upload"></i> Cargar Primera Factura</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if grafico_consumo %}
+    var fig1 = JSON.parse('{{ grafico_consumo | safe }}');
+    Plotly.newPlot('grafico-consumo', fig1.data, fig1.layout, {responsive: true});
+{% endif %}
+{% if grafico_costos %}
+    var fig2 = JSON.parse('{{ grafico_costos | safe }}');
+    Plotly.newPlot('grafico-costos', fig2.data, fig2.layout, {responsive: true});
+{% endif %}
+{% if grafico_comparativo %}
+    var fig3 = JSON.parse('{{ grafico_comparativo | safe }}');
+    Plotly.newPlot('grafico-comparativo', fig3.data, fig3.layout, {responsive: true});
+{% endif %}
+</script>
+{% endblock %}

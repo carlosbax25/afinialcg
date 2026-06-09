@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+instance/
+uploads/
+*.db
+.env
+venv/
+.vscode/

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Inventario de Equipos - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3><i class="bi bi-cpu"></i> Inventario de Equipos Eléctricos</h3>
+    <a href="/inventario/agregar" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Agregar Equipo
+    </a>
+</div>
+
+<!-- Resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <h5 class="text-primary">{{ equipos|length }}</h5>
+            <small class="text-muted">Equipos registrados</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <h5 class="text-warning">{{ total_consumo_diario }} kWh/día</h5>
+            <small class="text-muted">Consumo diario estimado</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <h5 class="text-danger">{{ total_consumo_mensual }} kWh/mes</h5>
+            <small class="text-muted">Consumo mensual proyectado</small>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de equipos -->
+<div class="card">
+    <div class="card-body">
+        {% if equipos %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Equipo</th>
+                        <th>Potencia (W)</th>
+                        <th>Horas/día</th>
+                        <th>Horario</th>
+                        <th>kWh/día</th>
+                        <th>kWh/mes</th>
+                        <th>Horario Pico</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipo in equipos %}
+                    <tr>
+                        <td><strong>{{ equipo.nombre }}</strong></td>
+                        <td>{{ equipo.potencia_watts }}</td>
+                        <td>{{ equipo.horas_uso_diario }}</td>
+                        <td>
+                            {% if equipo.horario_inicio %}
+                                {{ equipo.horario_inicio }} - {{ equipo.horario_fin }}
+                            {% else %}
+                                <span class="text-muted">No definido</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.3f"|format(equipo.consumo_diario_kwh) }}</td>
+                        <td><strong>{{ "%.2f"|format(equipo.consumo_mensual_kwh) }}</strong></td>
+                        <td>
+                            {% if equipo.es_horario_pico %}
+                                <span class="badge bg-danger">⚠️ Pico</span>
+                            {% else %}
+                                <span class="badge bg-success">✓ Valle</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/inventario/editar/{{ equipo.id }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="/inventario/eliminar/{{ equipo.id }}" class="d-inline"
+                                  onsubmit="return confirm('¿Eliminar este equipo?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cpu display-1 text-muted"></i>
+            <h5 class="mt-3">No hay equipos registrados</h5>
+            <p class="text-muted">Agregue sus equipos eléctricos para calcular el consumo proyectado.</p>
+            <a href="/inventario/agregar" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Agregar Primer Equipo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

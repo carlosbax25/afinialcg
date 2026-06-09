@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Cargar Factura - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Cargar Factura de Energía</h4>
+            </div>
+            <div class="card-body">
+                {% if confirmar and datos %}
+                <!-- Confirmar datos extraídos por OCR -->
+                <div class="alert alert-info">
+                    <i class="bi bi-check-circle"></i> Se extrajeron datos automáticamente. Verifique y corrija si es necesario.
+                </div>
+                <form method="POST" action="/upload/guardar">
+                    <input type="hidden" name="imagen" value="{{ imagen }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Inicio</label>
+                            <input type="date" class="form-control" name="periodo_inicio"
+                                   value="{{ datos.periodo_inicio }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Fin</label>
+                            <input type="date" class="form-control" name="periodo_fin"
+                                   value="{{ datos.periodo_fin }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Consumo (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="consumo_kwh"
+                                   value="{{ datos.consumo_kwh or '' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Costo Total ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_total"
+                                   value="{{ datos.costo_total or '' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Promedio Diario (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="promedio_diario_kwh"
+                                   value="{{ datos.promedio_diario_kwh or '' }}">
+                        </div>
+                    </div>
+                    <h6 class="text-primary mt-2"><i class="bi bi-receipt"></i> Desglose de la factura</h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Energía ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_energia" placeholder="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Aseo ($)</label>
+                            <input type="number" step="1" class="form-control" name="aseo" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Alumbrado ($)</label>
+                            <input type="number" step="1" class="form-control" name="alumbrado_publico" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tasa Seguridad ($)</label>
+                            <input type="number" step="1" class="form-control" name="tasa_seguridad" value="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-check-lg"></i> Confirmar y Guardar
+                    </button>
+                </form>
+
+                {% elif manual %}
+                <!-- Formulario manual (después de fallo OCR) -->
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> Ingrese los datos de la factura manualmente.
+                </div>
+                <form method="POST" action="/upload/guardar">
+                    <input type="hidden" name="imagen" value="{{ imagen }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Inicio</label>
+                            <input type="date" class="form-control" name="periodo_inicio" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Fin</label>
+                            <input type="date" class="form-control" name="periodo_fin" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Consumo (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="consumo_kwh" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Costo Total ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_total" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Promedio Diario (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="promedio_diario_kwh">
+                        </div>
+                    </div>
+                    <h6 class="text-primary mt-2"><i class="bi bi-receipt"></i> Desglose de la factura</h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Energía ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_energia" placeholder="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Aseo ($)</label>
+                            <input type="number" step="1" class="form-control" name="aseo" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Alumbrado ($)</label>
+                            <input type="number" step="1" class="form-control" name="alumbrado_publico" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tasa Seguridad ($)</label>
+                            <input type="number" step="1" class="form-control" name="tasa_seguridad" value="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-save"></i> Guardar Factura
+                    </button>
+                </form>
+
+                {% else %}
+                <!-- Formulario de carga de imagen -->
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="text-center p-4 border border-2 border-dashed rounded-3 mb-3" id="drop-zone">
+                        <i class="bi bi-image display-3 text-muted"></i>
+                        <p class="mt-2 text-muted">Arrastre la imagen de la factura aquí o haga clic para seleccionar</p>
+                        <input type="file" name="factura_img" id="factura_img" accept="image/*"
+                               class="form-control mt-2" required>
+                    </div>
+                    <p class="text-muted small">Formatos: PNG, JPG, BMP, TIFF. La app intentará extraer los datos automáticamente.</p>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-upload"></i> Subir y Procesar
+                    </button>
+                </form>
+
+                <hr class="my-4">
+                <h5>O ingrese los datos manualmente</h5>
+                <form method="POST" action="/upload/guardar">
+                    <input type="hidden" name="imagen" value="">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Inicio</label>
+                            <input type="date" class="form-control" name="periodo_inicio" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Periodo Fin</label>
+                            <input type="date" class="form-control" name="periodo_fin" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Consumo (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="consumo_kwh" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Costo Total ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_total" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Promedio Diario (kWh)</label>
+                            <input type="number" step="0.01" class="form-control" name="promedio_diario_kwh">
+                        </div>
+                    </div>
+                    <h6 class="text-primary mt-2"><i class="bi bi-receipt"></i> Desglose de la factura</h6>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Energía ($)</label>
+                            <input type="number" step="1" class="form-control" name="costo_energia" placeholder="0">
+                            <small class="text-muted">Solo energía</small>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Aseo ($)</label>
+                            <input type="number" step="1" class="form-control" name="aseo" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Alumbrado ($)</label>
+                            <input type="number" step="1" class="form-control" name="alumbrado_publico" value="0">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tasa Seguridad ($)</label>
+                            <input type="number" step="1" class="form-control" name="tasa_seguridad" value="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-save"></i> Guardar Manualmente
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

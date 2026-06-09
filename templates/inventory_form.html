@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if equipo else 'Agregar' }} Equipo - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-{{ 'pencil' if equipo else 'plus-lg' }}"></i>
+                    {{ 'Editar' if equipo else 'Agregar' }} Equipo Eléctrico
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del equipo</label>
+                        <input type="text" class="form-control" name="nombre"
+                               value="{{ equipo.nombre if equipo else '' }}"
+                               placeholder="Ej: Aire acondicionado sala" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Potencia (Watts)</label>
+                            <input type="number" step="0.1" class="form-control" name="potencia_watts"
+                                   value="{{ equipo.potencia_watts if equipo else '' }}"
+                                   placeholder="Ej: 1500" required>
+                            <small class="text-muted">Revise la etiqueta del equipo</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Horas de uso diario</label>
+                            <input type="number" step="0.5" class="form-control" name="horas_uso_diario"
+                                   value="{{ equipo.horas_uso_diario if equipo else '' }}"
+                                   placeholder="Ej: 8" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Horario inicio (opcional)</label>
+                            <input type="time" class="form-control" name="horario_inicio"
+                                   value="{{ equipo.horario_inicio if equipo and equipo.horario_inicio else '' }}">
+                            <small class="text-muted">Horario pico: 17:00-21:00</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Horario fin (opcional)</label>
+                            <input type="time" class="form-control" name="horario_fin"
+                                   value="{{ equipo.horario_fin if equipo and equipo.horario_fin else '' }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Días de uso al mes</label>
+                        <input type="number" class="form-control" name="dias_uso_mes"
+                               value="{{ equipo.dias_uso_mes if equipo else 30 }}"
+                               min="1" max="31">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-lg"></i> {{ 'Actualizar' if equipo else 'Guardar' }}
+                        </button>
+                        <a href="/inventario" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+
+                {% if not equipo %}
+                <hr class="my-4">
+                <h6>Equipos comunes y su potencia:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm small">
+                        <tr><td>Aire acondicionado (12000 BTU)</td><td>1400 W</td></tr>
+                        <tr><td>Nevera</td><td>150-350 W</td></tr>
+                        <tr><td>Lavadora</td><td>500 W</td></tr>
+                        <tr><td>TV LED 42"</td><td>80 W</td></tr>
+                        <tr><td>Bombillo LED</td><td>9-15 W</td></tr>
+                        <tr><td>Ventilador</td><td>50-75 W</td></tr>
+                        <tr><td>Plancha</td><td>1000-1200 W</td></tr>
+                        <tr><td>Computador portátil</td><td>45-65 W</td></tr>
+                        <tr><td>Microondas</td><td>800-1200 W</td></tr>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
