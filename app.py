@@ -33,29 +33,6 @@ app.register_blueprint(dashboard_bp)
 app.register_blueprint(inventory_bp)
 
 with app.app_context():
-    # Agregar columnas nuevas de forma segura (sin borrar datos)
-    import sqlalchemy
-    with db.engine.connect() as conn:
-        # Verificar y agregar columnas faltantes en configuracion_meta
-        try:
-            conn.execute(sqlalchemy.text("SELECT aseo FROM configuracion_meta LIMIT 1"))
-        except Exception:
-            conn.execute(sqlalchemy.text("ALTER TABLE configuracion_meta ADD COLUMN aseo FLOAT DEFAULT 0"))
-            conn.execute(sqlalchemy.text("ALTER TABLE configuracion_meta ADD COLUMN alumbrado_publico FLOAT DEFAULT 0"))
-            conn.execute(sqlalchemy.text("ALTER TABLE configuracion_meta ADD COLUMN tasa_seguridad FLOAT DEFAULT 0"))
-            conn.commit()
-
-        # Verificar y agregar columnas faltantes en factura
-        try:
-            conn.execute(sqlalchemy.text("SELECT aseo FROM factura LIMIT 1"))
-        except Exception:
-            conn.execute(sqlalchemy.text("ALTER TABLE factura ADD COLUMN costo_energia FLOAT"))
-            conn.execute(sqlalchemy.text("ALTER TABLE factura ADD COLUMN aseo FLOAT DEFAULT 0"))
-            conn.execute(sqlalchemy.text("ALTER TABLE factura ADD COLUMN alumbrado_publico FLOAT DEFAULT 0"))
-            conn.execute(sqlalchemy.text("ALTER TABLE factura ADD COLUMN tasa_seguridad FLOAT DEFAULT 0"))
-            conn.commit()
-
-    # Crear tablas que no existan (sin tocar las existentes)
     db.create_all()
 
 
