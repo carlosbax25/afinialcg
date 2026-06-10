@@ -53,7 +53,13 @@
                     {% for equipo in equipos %}
                     <tr>
                         <td><strong>{{ equipo.nombre }}</strong></td>
-                        <td>{{ equipo.potencia_watts }}</td>
+                        <td>
+                            {% if equipo.potencia_watts == equipo.potencia_watts|int %}
+                                {{ equipo.potencia_watts|int }}
+                            {% else %}
+                                {{ equipo.potencia_watts }}
+                            {% endif %}
+                        </td>
                         <td>
                             {% if equipo.horas_uso_diario < 1 %}
                                 {{ "%.0f"|format(equipo.horas_uso_diario * 60) }} min
