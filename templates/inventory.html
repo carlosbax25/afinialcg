@@ -41,11 +41,10 @@
                     <tr>
                         <th>Equipo</th>
                         <th>Potencia (W)</th>
-                        <th>Horas/día</th>
+                        <th>Uso/día</th>
                         <th>Horario</th>
                         <th>kWh/día</th>
                         <th>kWh/mes</th>
-                        <th>Horario Pico</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -78,13 +77,6 @@
                         </td>
                         <td>{{ "%.3f"|format(equipo.consumo_diario_kwh) }}</td>
                         <td><strong>{{ "%.2f"|format(equipo.consumo_mensual_kwh) }}</strong></td>
-                        <td>
-                            {% if equipo.es_horario_pico %}
-                                <span class="badge bg-danger">⚠️ Pico</span>
-                            {% else %}
-                                <span class="badge bg-success">✓ Valle</span>
-                            {% endif %}
-                        </td>
                         <td>
                             <a href="/inventario/editar/{{ equipo.id }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
