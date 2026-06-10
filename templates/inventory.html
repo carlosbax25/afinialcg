@@ -57,6 +57,8 @@
                         <td>
                             {% if equipo.horas_uso_diario < 1 %}
                                 {{ "%.0f"|format(equipo.horas_uso_diario * 60) }} min
+                            {% elif equipo.horas_uso_diario == equipo.horas_uso_diario|int %}
+                                {{ equipo.horas_uso_diario|int }} h
                             {% else %}
                                 {{ "%.1f"|format(equipo.horas_uso_diario) }} h
                             {% endif %}
