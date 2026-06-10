@@ -2,48 +2,50 @@
 {% block title %}Monitor de Consumo - Control de Energía{% endblock %}
 
 {% block content %}
-<!-- Header con logo -->
-<div class="row mb-4">
-    <div class="col-12 text-center">
-        <img src="{{ url_for('static', filename='logo-afinia.png') }}" alt="Afinia" class="mb-2" style="max-height: 60px;">
-        <h2 class="fw-bold" style="color: #0d47a1;">Monitor de Consumo</h2>
-        <p class="text-muted mb-0">Control en tiempo real de tu energía</p>
-    </div>
+<!-- Header -->
+<div class="text-center mb-4">
+    <h2 class="fw-bold mb-1">Monitor de Consumo</h2>
+    <p class="text-muted mb-0" style="font-size: 0.95rem;">Control en tiempo real de tu energía eléctrica</p>
 </div>
 
 <!-- Gauge principal -->
 <div class="row mb-4">
     <div class="col-lg-8 mx-auto">
-        <div class="card shadow-lg" style="border-top: 4px solid {{ estado_color }};">
-            <div class="card-body text-center py-4">
-                <div id="gauge-chart" style="height: 340px;"></div>
-                <h4 class="mt-2 fw-bold" style="color: {{ estado_color }}">{{ estado_texto }}</h4>
-                <p class="text-muted mb-2">
+        <div class="gauge-card">
+            <div class="card-body text-center">
+                <div id="gauge-chart" style="height: 320px;"></div>
+
+                <div class="status-bar mt-1 mb-3" style="background: {{ estado_color }}15; color: {{ estado_color }};">
+                    {{ estado_texto }}
+                </div>
+
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">
                     <i class="bi bi-calendar-check"></i>
-                    <strong>{{ dias_transcurridos }}</strong> días transcurridos |
+                    <strong>{{ dias_transcurridos }}</strong> días transcurridos &middot;
                     <strong>{{ dias_restantes }}</strong> días restantes
                     {% if dias_transcurridos > 0 and kwh_maximo > 0 %}
                         {% set porcentaje_tiempo = (dias_transcurridos / (dias_transcurridos + dias_restantes)) * 100 if (dias_transcurridos + dias_restantes) > 0 else 0 %}
                         {% if porcentaje <= porcentaje_tiempo %}
-                            | <span class="text-success fw-bold">👍 Ritmo adecuado</span>
+                            &middot; <span style="color: var(--success); font-weight: 600;">👍 Ritmo adecuado</span>
                         {% elif porcentaje <= porcentaje_tiempo * 1.2 %}
-                            | <span class="text-warning fw-bold">⚠️ Ligeramente por encima, ajusta un poco</span>
+                            &middot; <span style="color: var(--warning); font-weight: 600;">⚠️ Ajusta un poco</span>
                         {% else %}
-                            | <span class="text-danger fw-bold">🚨 Consumo alto, hay que ahorrar</span>
+                            &middot; <span style="color: var(--danger); font-weight: 600;">🚨 Hay que ahorrar</span>
                         {% endif %}
                     {% endif %}
                 </p>
-                <div class="row mt-3 pt-3 border-top">
+
+                <div class="row g-3 pt-3" style="border-top: 1px solid var(--gray-100);">
                     <div class="col-4">
-                        <h4 class="text-primary fw-bold mb-0">{{ consumo_actual }} kWh</h4>
+                        <div class="fw-bold fs-5" style="color: var(--primary);">{{ consumo_actual }} kWh</div>
                         <small class="text-muted">Consumido</small>
                     </div>
                     <div class="col-4">
-                        <h4 class="text-warning fw-bold mb-0">{{ kwh_maximo }} kWh</h4>
+                        <div class="fw-bold fs-5" style="color: var(--warning);">{{ kwh_maximo }} kWh</div>
                         <small class="text-muted">Tope máximo</small>
                     </div>
                     <div class="col-4">
-                        <h4 class="fw-bold mb-0" style="color: {{ estado_color }}">${{ "{:,.0f}".format(costo_total_estimado) }}</h4>
+                        <div class="fw-bold fs-5" style="color: {{ estado_color }};">${{ "{:,.0f}".format(costo_total_estimado) }}</div>
                         <small class="text-muted">Costo estimado</small>
                     </div>
                 </div>
@@ -52,42 +54,42 @@
     </div>
 </div>
 
-<!-- Tarjeta de Tarifa y Desglose -->
+<!-- Tarifa y Desglose -->
 <div class="row mb-4">
     <div class="col-lg-8 mx-auto">
         <div class="card">
             <div class="card-body py-3">
-                <div class="row align-items-center text-center">
-                    <div class="col-6 col-md-3 mb-2 mb-md-0">
-                        <div class="rounded-3 p-2" style="background: #e3f2fd;">
-                            <small class="text-muted d-block">Tarifa kWh</small>
-                            <h4 class="text-primary mb-0 fw-bold">${{ "{:,.0f}".format(config.tarifa_kwh) }}</h4>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3 mb-2 mb-md-0">
-                        <div class="rounded-3 p-2" style="background: #f3e5f5;">
-                            <small class="text-muted d-block">Aseo</small>
-                            <h5 class="mb-0">${{ "{:,.0f}".format(config.aseo or 0) }}</h5>
+                <div class="row g-2 text-center">
+                    <div class="col-6 col-md-3">
+                        <div class="rounded-3 p-2" style="background: var(--primary-light);">
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">Tarifa kWh</small>
+                            <span class="fw-bold" style="color: var(--primary); font-size: 1.1rem;">${{ "{:,.0f}".format(config.tarifa_kwh) }}</span>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="rounded-3 p-2" style="background: #fff8e1;">
-                            <small class="text-muted d-block">Alumbrado</small>
-                            <h5 class="mb-0">${{ "{:,.0f}".format(config.alumbrado_publico or 0) }}</h5>
+                        <div class="rounded-3 p-2" style="background: #f0fdf4;">
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">Aseo</small>
+                            <span class="fw-bold" style="font-size: 1.1rem;">${{ "{:,.0f}".format(config.aseo or 0) }}</span>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="rounded-3 p-2" style="background: #fce4ec;">
-                            <small class="text-muted d-block">Tasa Seguridad</small>
-                            <h5 class="mb-0">${{ "{:,.0f}".format(config.tasa_seguridad or 0) }}</h5>
+                        <div class="rounded-3 p-2" style="background: #fffbeb;">
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">Alumbrado</small>
+                            <span class="fw-bold" style="font-size: 1.1rem;">${{ "{:,.0f}".format(config.alumbrado_publico or 0) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="rounded-3 p-2" style="background: #fef2f2;">
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">Tasa Seguridad</small>
+                            <span class="fw-bold" style="font-size: 1.1rem;">${{ "{:,.0f}".format(config.tasa_seguridad or 0) }}</span>
                         </div>
                     </div>
                 </div>
                 {% if config.total_cargos_fijos > 0 %}
-                <div class="text-center mt-2 pt-2 border-top">
+                <div class="text-center mt-2 pt-2" style="border-top: 1px solid var(--gray-100);">
                     <small class="text-muted">
-                        Cargos fijos: <strong>${{ "{:,.0f}".format(config.total_cargos_fijos) }}</strong> |
-                        Disponible para energía: <strong>${{ "{:,.0f}".format(config.presupuesto_energia_pura) }}</strong> de ${{ "{:,.0f}".format(config.costo_maximo_mes) }}
+                        Cargos fijos: <strong>${{ "{:,.0f}".format(config.total_cargos_fijos) }}</strong> &middot;
+                        Para energía: <strong>${{ "{:,.0f}".format(config.presupuesto_energia_pura) }}</strong> de ${{ "{:,.0f}".format(config.costo_maximo_mes) }}
                     </small>
                 </div>
                 {% endif %}
@@ -96,122 +98,114 @@
     </div>
 </div>
 
-<!-- Métricas rápidas -->
+<!-- Métricas -->
 <div class="row mb-4 g-3">
     <div class="col-6 col-md-3">
-        <div class="card text-center p-3 h-100">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style="width:50px; height:50px; background:#e3f2fd;">
-                <i class="bi bi-calendar-day fs-4 text-info"></i>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #dbeafe; color: var(--primary);">
+                <i class="bi bi-calendar-day"></i>
             </div>
-            <h5 class="fw-bold">{{ dias_transcurridos }}</h5>
-            <small class="text-muted">Días transcurridos</small>
+            <p class="metric-value">{{ dias_transcurridos }}</p>
+            <p class="metric-label">Días transcurridos</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card text-center p-3 h-100">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style="width:50px; height:50px; background:#e8f5e9;">
-                <i class="bi bi-graph-up-arrow fs-4 text-success"></i>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #d1fae5; color: var(--success);">
+                <i class="bi bi-graph-up-arrow"></i>
             </div>
-            <h5 class="fw-bold">{{ promedio_diario }} kWh</h5>
-            <small class="text-muted">Promedio diario</small>
+            <p class="metric-value">{{ promedio_diario }} kWh</p>
+            <p class="metric-label">Promedio diario</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card text-center p-3 h-100">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style="width:50px; height:50px; background:#fff3e0;">
-                <i class="bi bi-hourglass-split fs-4 text-warning"></i>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #fef3c7; color: var(--warning);">
+                <i class="bi bi-hourglass-split"></i>
             </div>
-            <h5 class="fw-bold">{{ dias_restantes }}</h5>
-            <small class="text-muted">Días restantes</small>
+            <p class="metric-value">{{ dias_restantes }}</p>
+            <p class="metric-label">Días restantes</p>
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="card text-center p-3 h-100">
-            <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center mb-2" style="width:50px; height:50px; background:#ffebee;">
-                <i class="bi bi-cash-stack fs-4 text-danger"></i>
+        <div class="metric-card">
+            <div class="metric-icon" style="background: #fee2e2; color: var(--danger);">
+                <i class="bi bi-cash-stack"></i>
             </div>
-            <h5 class="fw-bold">${{ "{:,.0f}".format(costo_proyectado) }}</h5>
-            <small class="text-muted">Proyección mes</small>
+            <p class="metric-value">${{ "{:,.0f}".format(costo_proyectado) }}</p>
+            <p class="metric-label">Proyección mes</p>
         </div>
     </div>
 </div>
 
 <!-- Registrar lectura + Historial -->
-<div class="row">
+<div class="row g-4">
     <div class="col-lg-5">
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar Lectura</h5>
+        <div class="card mb-4">
+            <div class="card-header" style="background: var(--primary); color: white; border-radius: var(--radius) var(--radius) 0 0 !important;">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-1"></i> Registrar Lectura</h6>
             </div>
             <div class="card-body">
                 <form method="POST" action="/monitor/lectura">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Lectura del contador (kWh)</label>
+                        <label class="form-label">Lectura del contador (kWh)</label>
                         <input type="number" step="0.01" class="form-control form-control-lg"
                                name="lectura_kwh" placeholder="Ej: 12345.67" required autofocus>
-                        <small class="text-muted">Ingrese el valor que muestra su contador</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Fecha y hora</label>
-                        <input type="datetime-local" class="form-control" name="fecha_lectura"
-                               value="{{ now }}">
+                        <input type="datetime-local" class="form-control" name="fecha_lectura">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Nota (opcional)</label>
-                        <input type="text" class="form-control" name="nota"
-                               placeholder="Ej: Lectura de la mañana">
+                        <input type="text" class="form-control" name="nota" placeholder="Ej: Lectura mañana">
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <i class="bi bi-check-lg"></i> Registrar
+                        <i class="bi bi-check-lg me-1"></i> Registrar
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Acciones rápidas -->
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="/monitor/configurar" class="btn btn-outline-secondary">
-                        <i class="bi bi-gear"></i> Configurar meta y tarifa
-                    </a>
-                    <form method="POST" action="/monitor/nuevo-ciclo"
-                          onsubmit="return confirm('¿Iniciar nuevo ciclo? La lectura actual será la nueva base.')">
-                        <button type="submit" class="btn btn-outline-warning w-100">
-                            <i class="bi bi-arrow-repeat"></i> Iniciar Nuevo Ciclo
-                        </button>
-                    </form>
-                </div>
+        <div class="card">
+            <div class="card-body d-grid gap-2">
+                <a href="/monitor/configurar" class="btn btn-outline-secondary">
+                    <i class="bi bi-gear me-1"></i> Configurar meta y tarifa
+                </a>
+                <form method="POST" action="/monitor/nuevo-ciclo"
+                      onsubmit="return confirm('¿Iniciar nuevo ciclo? La lectura actual será la nueva base.')">
+                    <button type="submit" class="btn btn-outline-warning w-100">
+                        <i class="bi bi-arrow-repeat me-1"></i> Iniciar Nuevo Ciclo
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
     <div class="col-lg-7">
-        <!-- Gráfico de tendencia -->
         {% if lecturas|length > 1 %}
-        <div class="card mb-4 shadow-sm">
+        <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Tendencia de Consumo</h5>
+                <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up me-1"></i> Tendencia</h6>
             </div>
             <div class="card-body">
-                <div id="tendencia-chart" style="height: 250px;"></div>
+                <div id="tendencia-chart" style="height: 220px;"></div>
             </div>
         </div>
         {% endif %}
 
-        <!-- Historial de lecturas -->
-        <div class="card shadow-sm">
+        <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Historial de Lecturas</h5>
-                <span class="badge bg-primary rounded-pill">{{ lecturas|length }}</span>
+                <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-1"></i> Historial</h6>
+                <span class="badge" style="background: var(--primary-light); color: var(--primary);">{{ lecturas|length }} registros</span>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 {% if lecturas %}
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-sm table-hover align-middle">
+                <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                    <table class="table table-hover mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
-                                <th>Fecha</th>
+                                <th class="ps-3">Fecha</th>
                                 <th>Lectura</th>
                                 <th>Consumo</th>
                                 <th>Nota</th>
@@ -221,11 +215,11 @@
                         <tbody>
                             {% for lectura in lecturas %}
                             <tr>
-                                <td><small>{{ lectura.fecha_lectura.strftime('%d/%m/%Y %H:%M') }}</small></td>
+                                <td class="ps-3"><small>{{ lectura.fecha_lectura.strftime('%d/%m/%Y %H:%M') }}</small></td>
                                 <td><strong>{{ lectura.lectura_kwh }}</strong></td>
                                 <td>
                                     {% if config.lectura_inicio_ciclo is not none %}
-                                        <span class="badge bg-light text-dark">{{ "%.1f"|format(lectura.lectura_kwh - config.lectura_inicio_ciclo) }} kWh</span>
+                                        <span class="badge" style="background: var(--gray-100); color: var(--gray-700);">{{ "%.1f"|format(lectura.lectura_kwh - config.lectura_inicio_ciclo) }} kWh</span>
                                     {% else %}
                                         -
                                     {% endif %}
@@ -233,9 +227,9 @@
                                 <td><small class="text-muted">{{ lectura.nota or '' }}</small></td>
                                 <td>
                                     <form method="POST" action="/monitor/eliminar/{{ lectura.id }}"
-                                          class="d-inline" onsubmit="return confirm('¿Eliminar esta lectura?')">
-                                        <button class="btn btn-sm btn-outline-danger p-0 px-1">
-                                            <i class="bi bi-x"></i>
+                                          class="d-inline" onsubmit="return confirm('¿Eliminar?')">
+                                        <button class="btn btn-sm text-danger p-0 px-1 border-0">
+                                            <i class="bi bi-trash3"></i>
                                         </button>
                                     </form>
                                 </td>
@@ -245,10 +239,12 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <i class="bi bi-speedometer display-4 text-muted"></i>
-                    <p class="mt-2 text-muted">No hay lecturas registradas aún.</p>
-                    <p class="small">Primero <a href="/monitor/configurar">configure su ciclo</a>, luego registre la lectura de su contador.</p>
+                <div class="text-center py-5">
+                    <div class="metric-icon mx-auto mb-3" style="background: var(--gray-100); color: var(--gray-500); width: 64px; height: 64px; font-size: 1.5rem;">
+                        <i class="bi bi-speedometer"></i>
+                    </div>
+                    <p class="text-muted mb-1">No hay lecturas registradas</p>
+                    <p class="small text-muted"><a href="/monitor/configurar" class="text-decoration-none">Configure su ciclo</a> y registre su primera lectura.</p>
                 </div>
                 {% endif %}
             </div>
@@ -259,84 +255,74 @@
 
 {% block scripts %}
 <script>
-// Gauge chart
 var gaugeData = [{
     type: "indicator",
     mode: "gauge+number",
     value: {{ consumo_actual }},
-    title: { text: "Consumo del Ciclo (kWh)", font: { size: 16, color: '#555' } },
-    number: { suffix: " kWh", font: { size: 32, color: '{{ estado_color }}' } },
+    title: { text: "Consumo del Ciclo", font: { size: 14, color: '#6b7280' } },
+    number: { suffix: " kWh", font: { size: 36, color: '{{ estado_color }}', family: 'Inter' } },
     gauge: {
         axis: {
             range: [0, {{ kwh_maximo if kwh_maximo > 0 else 1000 }}],
-            tickwidth: 2,
-            tickcolor: "#999",
-            tickfont: { size: 11 }
+            tickwidth: 1,
+            tickcolor: "#e5e7eb",
+            tickfont: { size: 10, color: '#9ca3af' }
         },
-        bar: { color: "{{ estado_color }}", thickness: 0.25 },
-        bgcolor: "#f5f5f5",
+        bar: { color: "{{ estado_color }}", thickness: 0.2 },
+        bgcolor: "#f9fafb",
         borderwidth: 0,
         steps: [
-            { range: [0, {{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}], color: "#c8e6c9" },
-            { range: [{{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}, {{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}], color: "#ffe0b2" },
-            { range: [{{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}, {{ kwh_maximo if kwh_maximo > 0 else 1000 }}], color: "#ffcdd2" }
+            { range: [0, {{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}], color: "#dcfce7" },
+            { range: [{{ (kwh_maximo * 0.6)|round(0) if kwh_maximo > 0 else 600 }}, {{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}], color: "#fef9c3" },
+            { range: [{{ (kwh_maximo * 0.85)|round(0) if kwh_maximo > 0 else 850 }}, {{ kwh_maximo if kwh_maximo > 0 else 1000 }}], color: "#fecaca" }
         ],
         threshold: {
-            line: { color: "#d32f2f", width: 5 },
+            line: { color: "#dc2626", width: 4 },
             thickness: 0.8,
             value: {{ kwh_maximo if kwh_maximo > 0 else 1000 }}
         }
     }
 }];
 
-var gaugeLayout = {
-    margin: { t: 80, r: 30, l: 30, b: 10 },
-    height: 320,
-    font: { family: "system-ui" },
+Plotly.newPlot('gauge-chart', gaugeData, {
+    margin: { t: 60, r: 25, l: 25, b: 0 },
+    height: 300,
+    font: { family: "Inter, system-ui" },
     paper_bgcolor: 'transparent'
-};
-
-Plotly.newPlot('gauge-chart', gaugeData, gaugeLayout, {responsive: true, displayModeBar: false});
+}, {responsive: true, displayModeBar: false});
 
 {% if lecturas|length > 1 %}
-// Tendencia chart
 var fechas = [{% for l in lecturas|reverse %}"{{ l.fecha_lectura.strftime('%d/%m %H:%M') }}"{% if not loop.last %},{% endif %}{% endfor %}];
 var consumos = [{% for l in lecturas|reverse %}{{ "%.2f"|format(l.lectura_kwh - config.lectura_inicio_ciclo) if config.lectura_inicio_ciclo is not none else 0 }}{% if not loop.last %},{% endif %}{% endfor %}];
 
-var tendenciaData = [{
-    x: fechas,
-    y: consumos,
-    type: 'scatter',
-    mode: 'lines+markers',
-    name: 'Consumo acumulado',
-    line: { color: '#1a73e8', width: 3, shape: 'spline' },
-    marker: { size: 7, color: '#1a73e8' },
-    fill: 'tozeroy',
-    fillcolor: 'rgba(26, 115, 232, 0.08)'
-}];
-
-tendenciaData.push({
-    x: fechas,
-    y: Array(fechas.length).fill({{ kwh_maximo if kwh_maximo > 0 else 1000 }}),
-    type: 'scatter',
-    mode: 'lines',
-    name: 'Tope máximo',
-    line: { color: '#F44336', width: 2, dash: 'dash' }
-});
-
-var tendenciaLayout = {
-    margin: { t: 10, r: 20, l: 50, b: 40 },
-    height: 230,
+Plotly.newPlot('tendencia-chart', [
+    {
+        x: fechas, y: consumos,
+        type: 'scatter', mode: 'lines+markers',
+        name: 'Consumo',
+        line: { color: '#0066cc', width: 3, shape: 'spline' },
+        marker: { size: 6 },
+        fill: 'tozeroy',
+        fillcolor: 'rgba(0, 102, 204, 0.05)'
+    },
+    {
+        x: fechas,
+        y: Array(fechas.length).fill({{ kwh_maximo if kwh_maximo > 0 else 1000 }}),
+        type: 'scatter', mode: 'lines',
+        name: 'Tope',
+        line: { color: '#ef4444', width: 2, dash: 'dash' }
+    }
+], {
+    margin: { t: 5, r: 15, l: 45, b: 35 },
+    height: 200,
     showlegend: true,
-    legend: { x: 0.01, y: 0.99, bgcolor: 'transparent' },
-    yaxis: { title: 'kWh', gridcolor: '#eee' },
-    xaxis: { gridcolor: '#eee' },
-    font: { family: "system-ui" },
+    legend: { x: 0, y: 1, bgcolor: 'transparent', font: { size: 11 } },
+    yaxis: { title: 'kWh', gridcolor: '#f3f4f6', titlefont: { size: 11 } },
+    xaxis: { gridcolor: '#f3f4f6', tickfont: { size: 10 } },
+    font: { family: "Inter, system-ui" },
     paper_bgcolor: 'transparent',
     plot_bgcolor: 'transparent'
-};
-
-Plotly.newPlot('tendencia-chart', tendenciaData, tendenciaLayout, {responsive: true, displayModeBar: false});
+}, {responsive: true, displayModeBar: false});
 {% endif %}
 </script>
 {% endblock %}
