@@ -34,6 +34,20 @@ app.register_blueprint(inventory_bp)
 
 with app.app_context():
     db.create_all()
+    # Resetear secuencias en PostgreSQL después de migración
+    if database_url:
+        try:
+            from sqlalchemy import text
+            with db.engine.connect() as conn:
+                tables = ['lectura_contador', 'factura', 'equipo', 'configuracion_meta']
+                for table in tables:
+                    conn.execute(text(
+                        f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                        f"COALESCE((SELECT MAX(id) FROM {table}), 0) + 1, false)"
+                    ))
+                conn.commit()
+        except Exception:
+            pass
 
 
 if __name__ == '__main__':
