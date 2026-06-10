@@ -28,10 +28,17 @@
                             <small class="text-muted">Revise la etiqueta del equipo</small>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Horas de uso diario</label>
-                            <input type="number" step="0.5" class="form-control" name="horas_uso_diario"
-                                   value="{{ equipo.horas_uso_diario if equipo else '' }}"
-                                   placeholder="Ej: 8" required>
+                            <label class="form-label">Tiempo de uso diario</label>
+                            <div class="input-group">
+                                <input type="number" step="0.1" class="form-control" name="tiempo_uso"
+                                       value="{{ equipo.horas_uso_diario * 60 if equipo and equipo.horas_uso_diario < 1 else (equipo.horas_uso_diario if equipo else '') }}"
+                                       placeholder="Ej: 5" required id="tiempo_uso">
+                                <select class="form-select" name="unidad_tiempo" id="unidad_tiempo" style="max-width: 110px;">
+                                    <option value="horas" {{ 'selected' if not equipo or equipo.horas_uso_diario >= 1 else '' }}>Horas</option>
+                                    <option value="minutos" {{ 'selected' if equipo and equipo.horas_uso_diario < 1 else '' }}>Minutos</option>
+                                </select>
+                            </div>
+                            <small class="text-muted">Ej: 5 minutos o 8 horas</small>
                         </div>
                     </div>
                     <div class="row">

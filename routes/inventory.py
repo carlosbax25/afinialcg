@@ -18,6 +18,15 @@ def listar():
                            total_consumo_mensual=round(total_consumo_mensual, 2))
 
 
+def _calcular_horas(form):
+    """Convierte tiempo de uso a horas (acepta horas o minutos)."""
+    tiempo = float(form['tiempo_uso'])
+    unidad = form.get('unidad_tiempo', 'horas')
+    if unidad == 'minutos':
+        return tiempo / 60
+    return tiempo
+
+
 @inventory_bp.route('/inventario/agregar', methods=['GET', 'POST'])
 def agregar():
     if request.method == 'POST':
@@ -25,7 +34,7 @@ def agregar():
             equipo = Equipo(
                 nombre=request.form['nombre'],
                 potencia_watts=float(request.form['potencia_watts']),
-                horas_uso_diario=float(request.form['horas_uso_diario']),
+                horas_uso_diario=_calcular_horas(request.form),
                 horario_inicio=request.form.get('horario_inicio') or None,
                 horario_fin=request.form.get('horario_fin') or None,
                 dias_uso_mes=int(request.form.get('dias_uso_mes', 30))
@@ -48,7 +57,7 @@ def editar(id):
         try:
             equipo.nombre = request.form['nombre']
             equipo.potencia_watts = float(request.form['potencia_watts'])
-            equipo.horas_uso_diario = float(request.form['horas_uso_diario'])
+            equipo.horas_uso_diario = _calcular_horas(request.form)
             equipo.horario_inicio = request.form.get('horario_inicio') or None
             equipo.horario_fin = request.form.get('horario_fin') or None
             equipo.dias_uso_mes = int(request.form.get('dias_uso_mes', 30))
