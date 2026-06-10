@@ -54,7 +54,13 @@
                     <tr>
                         <td><strong>{{ equipo.nombre }}</strong></td>
                         <td>{{ equipo.potencia_watts }}</td>
-                        <td>{{ equipo.horas_uso_diario }}</td>
+                        <td>
+                            {% if equipo.horas_uso_diario < 1 %}
+                                {{ "%.0f"|format(equipo.horas_uso_diario * 60) }} min
+                            {% else %}
+                                {{ "%.1f"|format(equipo.horas_uso_diario) }} h
+                            {% endif %}
+                        </td>
                         <td>
                             {% if equipo.horario_inicio %}
                                 {{ equipo.horario_inicio }} - {{ equipo.horario_fin }}
