@@ -4,6 +4,7 @@ from routes.monitor import monitor_bp
 from routes.upload import upload_bp
 from routes.dashboard import dashboard_bp
 from routes.inventory import inventory_bp
+from routes.export import export_bp
 import os
 
 app = Flask(__name__)
@@ -39,6 +40,7 @@ app.register_blueprint(monitor_bp)
 app.register_blueprint(upload_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(inventory_bp)
+app.register_blueprint(export_bp)
 
 with app.app_context():
     db.create_all()
