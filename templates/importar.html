@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Importar Datos - Control de Energía{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-7 mx-auto">
+
+        {% if resumen %}
+        <!-- Resultado de la importación -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-check-circle-fill text-success"></i> Importación completada</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon bg-primary bg-opacity-10">
+                                <i class="bi bi-receipt text-primary"></i>
+                            </div>
+                            <p class="metric-value">{{ resumen.facturas }}</p>
+                            <p class="metric-label">Facturas</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon bg-success bg-opacity-10">
+                                <i class="bi bi-lightning text-success"></i>
+                            </div>
+                            <p class="metric-value">{{ resumen.lecturas }}</p>
+                            <p class="metric-label">Lecturas</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon bg-warning bg-opacity-10">
+                                <i class="bi bi-cpu text-warning"></i>
+                            </div>
+                            <p class="metric-value">{{ resumen.equipos }}</p>
+                            <p class="metric-label">Equipos</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-icon {% if resumen.config %}bg-success bg-opacity-10{% else %}bg-secondary bg-opacity-10{% endif %}">
+                                <i class="bi bi-gear {% if resumen.config %}text-success{% else %}text-secondary{% endif %}"></i>
+                            </div>
+                            <p class="metric-value">{{ '✓' if resumen.config else '—' }}</p>
+                            <p class="metric-label">Config</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if resumen.errores %}
+                <div class="alert alert-warning">
+                    <strong><i class="bi bi-exclamation-triangle"></i> Algunos registros tuvieron errores:</strong>
+                    <ul class="mb-0 mt-2">
+                        {% for err in resumen.errores %}
+                        <li><small>{{ err }}</small></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2 mt-3">
+                    <a href="/" class="btn btn-primary"><i class="bi bi-speedometer2"></i> Ir al Monitor</a>
+                    <a href="/importar" class="btn btn-outline-secondary"><i class="bi bi-upload"></i> Importar otro archivo</a>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Formulario de importación -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-upload"></i> Restaurar datos desde Excel</h4>
+            </div>
+            <div class="card-body">
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Atención:</strong> La importación <strong>reemplaza todos los datos actuales</strong>
+                    de facturas, lecturas, equipos y configuración con los del archivo Excel.
+                    Esta acción no se puede deshacer.
+                </div>
+
+                <p class="text-muted mb-4">
+                    Sube el archivo <code>.xlsx</code> que descargaste con el botón
+                    <strong>Exportar</strong>. La app restaurará todos tus datos automáticamente.
+                </p>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Archivo Excel (.xlsx)</label>
+                        <input type="file" name="archivo" class="form-control form-control-lg"
+                               accept=".xlsx" required>
+                        <small class="text-muted">Solo archivos exportados desde esta app.</small>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-lg w-100"
+                            onclick="return confirm('¿Seguro? Esto borrará todos los datos actuales y los reemplazará con los del archivo.')">
+                        <i class="bi bi-arrow-repeat"></i> Restaurar datos
+                    </button>
+                </form>
+
+                <hr class="my-4">
+                <div class="d-flex align-items-center gap-2 text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    <small>¿No tienes un backup? <a href="/exportar">Descarga uno ahora</a> antes de continuar.</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
