@@ -1,21 +1,13 @@
-databases:
-  - name: energy-db
-    plan: free
-    databaseName: energy_control
-    user: energy_user
-
 services:
   - type: web
-    name: control-energia
+    name: afinia-control-energia
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: energy-db
-          property: connectionString
+        sync: false   # Lo pegas manualmente en el dashboard de Render con tu URL de Neon
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION

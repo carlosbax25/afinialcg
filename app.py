@@ -9,13 +9,21 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'energy-control-secret-key')
 
-# Base de datos: usa PostgreSQL si DATABASE_URL existe (Render), sino SQLite local
+# Base de datos: usa PostgreSQL si DATABASE_URL existe, sino SQLite local
 database_url = os.environ.get('DATABASE_URL', '')
 if database_url:
-    # Render usa "postgres://" pero SQLAlchemy necesita "postgresql://"
+    # Algunos proveedores usan "postgres://", SQLAlchemy necesita "postgresql://"
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    # Neon requiere SSL; SQLAlchemy lo acepta como connect_args o en la URL
+    connect_args = {}
+    if 'neon.tech' in database_url or 'sslmode=require' in database_url:
+        connect_args = {'sslmode': 'require'}
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'connect_args': connect_args,
+        'pool_pre_ping': True,  # Reconecta automáticamente si la BD estuvo inactiva
+    }
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///energy.db'
 

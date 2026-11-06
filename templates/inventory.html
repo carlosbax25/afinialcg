@@ -75,8 +75,24 @@
                                 <span class="text-muted">No definido</span>
                             {% endif %}
                         </td>
-                        <td>{{ "%.3f"|format(equipo.consumo_diario_kwh) }}</td>
-                        <td><strong>{{ "%.2f"|format(equipo.consumo_mensual_kwh) }}</strong></td>
+                        <td>
+                            {% set kwh_d = equipo.consumo_diario_kwh %}
+                            {% if kwh_d == kwh_d|int %}
+                                {{ kwh_d|int }}
+                            {% elif kwh_d >= 1 %}
+                                {{ "%.2f"|format(kwh_d) }}
+                            {% else %}
+                                {{ "%.3f"|format(kwh_d) }}
+                            {% endif %}
+                        </td>
+                        <td><strong>
+                            {% set kwh_m = equipo.consumo_mensual_kwh %}
+                            {% if kwh_m == kwh_m|int %}
+                                {{ kwh_m|int }}
+                            {% else %}
+                                {{ "%.2f"|format(kwh_m) }}
+                            {% endif %}
+                        </strong></td>
                         <td>
                             <a href="/inventario/editar/{{ equipo.id }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
